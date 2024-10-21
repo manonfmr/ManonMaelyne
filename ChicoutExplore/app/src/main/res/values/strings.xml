@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">ChicoutExplore</string>
+    <string name="activity_screen_name">Activité 1</string>
 </resources>

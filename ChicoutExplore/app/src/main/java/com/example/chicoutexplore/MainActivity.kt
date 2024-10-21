@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.navigation.compose.NavHost
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
@@ -136,11 +135,11 @@ fun ChicoutExploreApp(navController: NavHostController = rememberNavController()
         ) {
             composable(route = enumScreen.Map.name) {
                 //Appel de l'écran map
-                MapScreen()
+                MapScreen(navController)
             }
             composable(route = enumScreen.Activity.name) {
                 //Appel de l'écran Activité
-                ActivityScreen()
+                ActivityScreen(navController)
             }
             composable(route = enumScreen.SearchResult.name) {
                 //Appel de l'écran resultat de recherche
@@ -152,7 +151,7 @@ fun ChicoutExploreApp(navController: NavHostController = rememberNavController()
             }
             composable(route = enumScreen.feedbackForm.name) {
                 //Appel de l'écran formulaire avis
-                FeedbackFormScreen()
+                FeedbackFormScreen(navController)
             }
 
 
