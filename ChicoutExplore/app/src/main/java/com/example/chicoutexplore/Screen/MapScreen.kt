@@ -15,7 +15,7 @@ import com.example.chicoutexplore.ui.theme.ChicoutExploreTheme
 fun MapScreen(navController: NavHostController) {
     Column {
         Text(text = "Map")
-        Button(onClick = { navController.navigate(enumScreen.Activity.name) }, colors = ButtonDefaults.buttonColors()) {
+        Button(onClick = { navController.navigate("${enumScreen.Activity.name}/1") }, colors = ButtonDefaults.buttonColors()) {
             Text(text = "Activité 1")
         }
     }

@@ -1,18 +1,23 @@
 package com.example.chicoutexplore
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.navigation.compose.NavHost
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.LocationOn
@@ -27,7 +32,11 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
@@ -46,11 +55,14 @@ import com.example.chicoutexplore.Screen.MapScreen
 import com.example.chicoutexplore.Screen.SearchResultScreen
 import com.example.chicoutexplore.Screen.SettingScreen
 import com.example.chicoutexplore.ui.theme.ChicoutExploreTheme
+import com.google.firebase.ktx.Firebase
+import com.google.firebase.firestore.ktx.firestore
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
         setContent {
             ChicoutExploreTheme {
                 ChicoutExploreApp()
@@ -137,9 +149,9 @@ fun ChicoutExploreApp(navController: NavHostController = rememberNavController()
                 //Appel de l'écran map
                 MapScreen(navController)
             }
-            composable(route = enumScreen.Activity.name) {
-                //Appel de l'écran Activité
-                ActivityScreen(navController)
+            composable(route = "${enumScreen.Activity.name}/{activityId}") { backStackEntry ->
+                val activityId = backStackEntry.arguments?.getString("activityId") ?: "Unknown"
+                ActivityScreen(activityId, navController)
             }
             composable(route = enumScreen.SearchResult.name) {
                 //Appel de l'écran resultat de recherche
@@ -149,9 +161,10 @@ fun ChicoutExploreApp(navController: NavHostController = rememberNavController()
                 //Appel de l'écran Paramètre
                 SettingScreen()
             }
-            composable(route = enumScreen.feedbackForm.name) {
+            composable(route = "${enumScreen.feedbackForm.name}/{activityId}") {backStackEntry ->
                 //Appel de l'écran formulaire avis
-                FeedbackFormScreen(navController)
+                val activityId = backStackEntry.arguments?.getString("activityId") ?: "Unknown"
+                FeedbackFormScreen(activityId,navController)
             }
 
 
@@ -159,6 +172,47 @@ fun ChicoutExploreApp(navController: NavHostController = rememberNavController()
         }
     }
 }
+
+/** Recupération des donnée de la base
+ * en liste
+ */
+fun fetchActivities(callback: (List<Activity>) -> Unit) {
+    val db = Firebase.firestore
+    db.collection("Activities")
+        .get()
+        .addOnSuccessListener { result ->
+            val activities = result.documents.mapNotNull { document ->
+                document.toObject(Activity::class.java)
+            }
+            callback(activities)
+        }
+        .addOnFailureListener { exception ->
+            Log.e("Firestore", "Error fetching activities", exception)
+            callback(emptyList())
+        }
+}
+/** Recupération des donnée de la base
+ * en  fonction de l'id de l'activité
+ */
+fun fetchActivityById(activityId: String, onComplete: (Activity?) -> Unit) {
+    val db = Firebase.firestore
+    db.collection("Activities")
+        .document(activityId) // Récupère le document avec l'ID correspondant
+        .get()
+        .addOnSuccessListener { document ->
+            if (document != null && document.exists()) {
+                val activity = document.toObject(Activity::class.java)
+                onComplete(activity) // Passe l'activité récupérée à la fonction onComplete
+            } else {
+                onComplete(null) // Aucun document trouvé
+            }
+        }
+        .addOnFailureListener { exception ->
+            exception.printStackTrace()
+            onComplete(null) // Erreur lors de la récupération des données
+        }
+}
+
 
 @Preview(showBackground = true)
 @Composable
