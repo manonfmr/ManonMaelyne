@@ -133,10 +133,10 @@ fun ChicoutExploreApp(navController: NavHostController = rememberNavController()
             startDestination = enumScreen.Map.name,
             modifier = Modifier.padding(innerPadding)
         ) {
-            composable(route = enumScreen.Map.name) {
+            //composable(route = enumScreen.Map.name) {
                 //Appel de l'écran map
-                MapScreen(navController)
-            }
+              //  MapScreen(navController)
+            //}
             composable(route = enumScreen.Activity.name) {
                 //Appel de l'écran Activité
                 ActivityScreen(navController)
@@ -167,3 +167,4 @@ fun GreetingPreview() {
         ChicoutExploreApp()
     }
 }
+
