@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">ChicoutExplore</string>
     <string name="activity_screen_name">Activité 1</string>
+    <string name="edit_icon_description">edit_icon_description</string>
 </resources>
