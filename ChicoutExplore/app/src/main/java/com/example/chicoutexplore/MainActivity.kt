@@ -147,7 +147,7 @@ fun ChicoutExploreApp(navController: NavHostController = rememberNavController()
         ) {
             composable(route = enumScreen.Map.name) {
                 //Appel de l'écran map
-                MapScreen(navController)
+                //MapScreen(navController)
             }
             composable(route = "${enumScreen.Activity.name}/{activityId}") { backStackEntry ->
                 val activityId = backStackEntry.arguments?.getString("activityId") ?: "Unknown"
@@ -221,3 +221,4 @@ fun GreetingPreview() {
         ChicoutExploreApp()
     }
 }
+

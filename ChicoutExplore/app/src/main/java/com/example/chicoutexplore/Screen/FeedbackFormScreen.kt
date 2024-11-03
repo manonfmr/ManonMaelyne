@@ -5,10 +5,15 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
@@ -19,8 +24,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.example.chicoutexplore.Activity
@@ -38,36 +46,81 @@ fun FeedbackFormScreen(activityId: String,navController: NavHostController) {
             activity = fetchedActivity
         }
     }
-    Column {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(text = "Avis :  ${activity?.nom}")
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(dimensionResource(id = R.dimen.padding_medium))
+            .background(Color(0xFFF3F4F6)),
+        verticalArrangement = Arrangement.Top
+    ) {
+        // Titre de l'écran de feedback
+        Text(
+            text = "Avis : ${activity?.nom}",
+            style = MaterialTheme.typography.titleLarge,
+            modifier = Modifier.padding(bottom = dimensionResource(id = R.dimen.padding_medium)) // Espacement en bas
+        )
+
+        // Commentaire / Description
+        Text(
+            text = "Commentaire / Description :",
+            style = MaterialTheme.typography.bodyMedium,
+            modifier = Modifier.padding(bottom = dimensionResource(id = R.dimen.padding_medium)) // Espacement en bas
+        )
+
+        // Prix
+        Text(
+            text = "Prix :",
+            style = MaterialTheme.typography.bodyMedium,
+            modifier = Modifier.padding(bottom = dimensionResource(id = R.dimen.padding_medium)) // Espacement en bas
+        )
+
+        // Photos
+        Text(
+            text = "Photos :",
+            style = MaterialTheme.typography.bodyMedium,
+            modifier = Modifier.padding(bottom = dimensionResource(id = R.dimen.padding_medium)) // Espacement en bas
+        )
+
+        // Bouton pour ajouter des photos (placé sous le texte "Photos :")
+        Button(
+            onClick = { /*TODO: Ajouter une fonction pour ajouter des photos*/ },
+            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6200EE)),
+            shape = RoundedCornerShape(dimensionResource(id = R.dimen.padding_small)),
+            modifier = Modifier
+                .fillMaxWidth() // Remplir la largeur disponible
+                .padding(bottom = dimensionResource(id = R.dimen.padding_medium)) // Espacement en bas
+        ) {
+            Icon(
+                imageVector = Icons.Default.Add,
+                contentDescription = stringResource(R.string.add_photos_description)
+            )
+            Spacer(modifier = Modifier.width(8.dp)) // Espacement entre l'icône et le texte (optionnel)
+            Text(text = "Ajouter Photo") // Ajout d'un texte au bouton pour plus de clarté
         }
-        Text(text = "Commentaire / Description :")
-        Text(text = "Prix : ")
-        Row {
-            Text(text = "Photos : ")
-            Button(onClick = { /*TODO*/ }) {
-                Icon(
-                    imageVector = Icons.Default.Add,
-                    contentDescription = "Add photos",
-                )
-            }
-        }
-        Row(horizontalArrangement = Arrangement.End){
-            Button(onClick = { navController.navigate("${enumScreen.Activity.name}/${activityId}") }) {
+
+        // Bouton de validation
+        Row(
+            horizontalArrangement = Arrangement.End,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = dimensionResource(id = R.dimen.padding_medium)) // Espacement en haut
+        ) {
+            Button(
+                onClick = { navController.navigate("${enumScreen.Activity.name}/${activityId}") },
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6200EE)),
+                shape = RoundedCornerShape(dimensionResource(id = R.dimen.padding_small))
+            ) {
                 Text(text = "Valider")
             }
         }
-
-
     }
 }
 
-@Preview
+@Preview(showBackground = true)
 @Composable
 fun FeedbackFormScreenPreview(navController: NavHostController = rememberNavController()) {
     ChicoutExploreTheme{
         FeedbackFormScreen("1",navController);
     }
-
 }
