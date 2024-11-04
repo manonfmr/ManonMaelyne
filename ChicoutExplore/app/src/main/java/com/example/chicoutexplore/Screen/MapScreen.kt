@@ -1,71 +1,60 @@
-package com.example.chicoutexplore.Screen
-
 import android.os.Bundle
-import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.foundation.layout.Column
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.viewinterop.AndroidView
-import com.example.chicoutexplore.ui.theme.ChicoutExploreTheme
-import org.osmdroid.config.Configuration
+import androidx.navigation.NavHostController
+import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
-import org.osmdroid.views.overlay.Marker
 import com.example.chicoutexplore.R
+import com.example.chicoutexplore.enumScreen
 
 class MapScreen : AppCompatActivity() {
+    private var mapView: MapView? = null
 
-    //@Composable
-//fun MapScreen() {
-//Column {
-//Text(text = "Map")
-//Button(onClick = { navController.navigate(enumScreen.Activity.name) }, colors = ButtonDefaults.buttonColors()) {
-// Text(text = "Activité 1")
-//}
-//}
-// }
+    @Composable
+    fun navigation(navController: NavHostController) {
+        Column {
+            Text(text = "Map")
+            Button(
+                onClick = { navController.navigate(enumScreen.Activity.name) },
+                colors = ButtonDefaults.buttonColors()
+            ) {
+                Text(text = "Activité 1")
+            }
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_map)
 
-        // Configurer l'utilisateur pour osmdroid
-        Configuration.getInstance().userAgentValue = packageName
+        // Initialisation de la carte
+        mapView = findViewById<MapView>(R.id.mapView)
 
-        setContent {
-            ChicoutExploreTheme {
-                MapScreenContent()
-            }
+        // Utilisation de `let` pour assurer la sécurité de nullité
+        mapView?.let { map ->
+            map.setTileSource(TileSourceFactory.MAPNIK) // Source de tuiles par défaut
+            map.setBuiltInZoomControls(true) // Zoomable
+            map.setMultiTouchControls(true) // Contrôle du multi-touch
+
+            // Centre la carte sur une position spécifique
+            val mapController = map.controller
+            mapController.setZoom(15.0) // Exemple : niveau de zoom par défaut
+            mapController.setCenter(GeoPoint(48.8583, 2.2944)) // Exemple : centre sur Paris (Tour Eiffel)
         }
     }
 
-    @Composable
-    fun MapScreenContent() {
-        AndroidView(factory = { context ->
-            MapView(context).apply {
-                setMultiTouchControls(true)
-            }
-        }, update = { mapView ->
-            val controller = mapView.controller
-            if (controller != null) {
-                val startPoint = GeoPoint(48.4197, 71.0661)
-                controller.setZoom(15.0)
-                controller.setCenter(startPoint)
-
-                // Ajouter un marqueur
-                val marker = Marker(mapView)
-                marker.position = startPoint
-                marker.title = "Saguenay"
-                mapView.overlays.add(marker)
-            }
-        })
+    public override fun onResume() {
+        super.onResume()
+        mapView?.onResume() // Utiliser `?.` pour éviter les accès forcés
     }
 
-
-    @Preview(showBackground = true)
-    @Composable
-    fun MapScreenPreview() {
-        ChicoutExploreTheme {
-            MapScreenContent()
-        }
+    public override fun onPause() {
+        super.onPause()
+        mapView?.onPause() // Utiliser `?.` pour éviter les accès forcés
     }
 }

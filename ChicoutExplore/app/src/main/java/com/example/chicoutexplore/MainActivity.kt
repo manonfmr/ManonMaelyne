@@ -1,5 +1,6 @@
 package com.example.chicoutexplore
 
+import MapScreen
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -42,7 +43,6 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.chicoutexplore.Screen.ActivityScreen
 import com.example.chicoutexplore.Screen.FeedbackFormScreen
-import com.example.chicoutexplore.Screen.MapScreen
 import com.example.chicoutexplore.Screen.SearchResultScreen
 import com.example.chicoutexplore.Screen.SettingScreen
 import com.example.chicoutexplore.ui.theme.ChicoutExploreTheme
@@ -133,10 +133,10 @@ fun ChicoutExploreApp(navController: NavHostController = rememberNavController()
             startDestination = enumScreen.Map.name,
             modifier = Modifier.padding(innerPadding)
         ) {
-            //composable(route = enumScreen.Map.name) {
+            composable(route = enumScreen.Map.name) {
                 //Appel de l'écran map
-              //  MapScreen(navController)
-            //}
+                MapScreen()
+            }
             composable(route = enumScreen.Activity.name) {
                 //Appel de l'écran Activité
                 ActivityScreen(navController)
