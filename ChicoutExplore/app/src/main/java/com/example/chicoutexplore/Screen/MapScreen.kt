@@ -11,6 +11,8 @@ import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
 import com.example.chicoutexplore.R
 import com.example.chicoutexplore.enumScreen
+import org.osmdroid.config.Configuration
+import android.content.Context
 
 class MapScreen : AppCompatActivity() {
     private var mapView: MapView? = null
@@ -30,21 +32,23 @@ class MapScreen : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Initialisation d'OsmDroid
+        Configuration.getInstance().load(applicationContext, getSharedPreferences("osmPrefs", Context.MODE_PRIVATE))
+
         setContentView(R.layout.activity_map)
 
         // Initialisation de la carte
         mapView = findViewById<MapView>(R.id.mapView)
 
-        // Utilisation de `let` pour assurer la sécurité de nullité
         mapView?.let { map ->
-            map.setTileSource(TileSourceFactory.MAPNIK) // Source de tuiles par défaut
-            map.setBuiltInZoomControls(true) // Zoomable
-            map.setMultiTouchControls(true) // Contrôle du multi-touch
+            map.setTileSource(TileSourceFactory.MAPNIK)
+            map.setBuiltInZoomControls(true)
+            map.setMultiTouchControls(true)
 
-            // Centre la carte sur une position spécifique
             val mapController = map.controller
-            mapController.setZoom(15.0) // Exemple : niveau de zoom par défaut
-            mapController.setCenter(GeoPoint(48.8583, 2.2944)) // Exemple : centre sur Paris (Tour Eiffel)
+            mapController.setZoom(15.0)
+            mapController.setCenter(GeoPoint(48.8583, 2.2944))
         }
     }
 
