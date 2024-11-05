@@ -61,15 +61,6 @@ fun SettingScreen() {
         SettingOption(text = if (isEnglish) "About" else "À propos") {
             showToast(context, if (isEnglish) "About clicked" else "À propos cliqué")
         }
-
-        // Déconnexion
-        Spacer(modifier = Modifier.weight(1f)) // Pour pousser le bouton de déconnexion en bas
-        Button(
-            onClick = { /* TODO: Déconnexion */ },
-            modifier = Modifier.align(Alignment.End)
-        ) {
-            Text(text = if (isEnglish) "Log Out" else "Déconnexion")
-        }
     }
 }
 
@@ -85,7 +76,6 @@ fun SettingOption(text: String, onClick: () -> Unit) {
     )
 }
 
-// Fonction pour afficher un toast
 private fun showToast(context: Context, message: String) {
     Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
 }
