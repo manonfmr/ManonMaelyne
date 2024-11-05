@@ -59,6 +59,7 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
     implementation("org.osmdroid:osmdroid-android:6.1.10")
+    implementation("com.google.guava:guava:27.0.1-android")
     implementation("androidx.navigation:navigation-runtime-ktx:2.8.3")
     implementation("androidx.navigation:navigation-compose:2.8.3")
     implementation("androidx.appcompat:appcompat:1.7.0")
