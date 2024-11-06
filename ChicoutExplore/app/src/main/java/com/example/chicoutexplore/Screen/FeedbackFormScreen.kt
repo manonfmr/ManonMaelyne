@@ -39,6 +39,7 @@ import com.example.chicoutexplore.ui.theme.ChicoutExploreTheme
 
 @Composable
 fun FeedbackFormScreen(activityId: String,navController: NavHostController) {
+    println(activityId)
     var activity by remember { mutableStateOf<Activity?>(null) }
     // Lance la récupération de données pour l'activité
     LaunchedEffect(activityId) {
@@ -47,74 +48,78 @@ fun FeedbackFormScreen(activityId: String,navController: NavHostController) {
         }
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(dimensionResource(id = R.dimen.padding_medium))
-            .background(Color(0xFFF3F4F6)),
-        verticalArrangement = Arrangement.Top
-    ) {
-        // Titre de l'écran de feedback
-        Text(
-            text = "Avis : ${activity?.nom}",
-            style = MaterialTheme.typography.titleLarge,
-            modifier = Modifier.padding(bottom = dimensionResource(id = R.dimen.padding_medium)) // Espacement en bas
-        )
-
-        // Commentaire / Description
-        Text(
-            text = "Commentaire / Description :",
-            style = MaterialTheme.typography.bodyMedium,
-            modifier = Modifier.padding(bottom = dimensionResource(id = R.dimen.padding_medium)) // Espacement en bas
-        )
-
-        // Prix
-        Text(
-            text = "Prix :",
-            style = MaterialTheme.typography.bodyMedium,
-            modifier = Modifier.padding(bottom = dimensionResource(id = R.dimen.padding_medium)) // Espacement en bas
-        )
-
-        // Photos
-        Text(
-            text = "Photos :",
-            style = MaterialTheme.typography.bodyMedium,
-            modifier = Modifier.padding(bottom = dimensionResource(id = R.dimen.padding_medium)) // Espacement en bas
-        )
-
-        // Bouton pour ajouter des photos (placé sous le texte "Photos :")
-        Button(
-            onClick = { /*TODO: Ajouter une fonction pour ajouter des photos*/ },
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6200EE)),
-            shape = RoundedCornerShape(dimensionResource(id = R.dimen.padding_small)),
-            modifier = Modifier
-                .fillMaxWidth() // Remplir la largeur disponible
-                .padding(bottom = dimensionResource(id = R.dimen.padding_medium)) // Espacement en bas
-        ) {
-            Icon(
-                imageVector = Icons.Default.Add,
-                contentDescription = stringResource(R.string.add_photos_description)
-            )
-            Spacer(modifier = Modifier.width(8.dp)) // Espacement entre l'icône et le texte (optionnel)
-            Text(text = "Ajouter Photo") // Ajout d'un texte au bouton pour plus de clarté
-        }
-
-        // Bouton de validation
-        Row(
-            horizontalArrangement = Arrangement.End,
+    if (activity != null) {
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = dimensionResource(id = R.dimen.padding_medium)) // Espacement en haut
+                .padding(dimensionResource(id = R.dimen.padding_medium)),
+            verticalArrangement = Arrangement.Top
         ) {
+            // Titre de l'écran de feedback
+            Text(
+                text = "Avis : ${activity?.nom}",
+                style = MaterialTheme.typography.titleLarge,
+                modifier = Modifier.padding(bottom = dimensionResource(id = R.dimen.padding_medium)) // Espacement en bas
+            )
+
+            // Commentaire / Description
+            Text(
+                text = "Commentaire / Description :",
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.padding(bottom = dimensionResource(id = R.dimen.padding_medium)) // Espacement en bas
+            )
+
+            // Prix
+            Text(
+                text = "Prix :",
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.padding(bottom = dimensionResource(id = R.dimen.padding_medium)) // Espacement en bas
+            )
+
+            // Photos
+            Text(
+                text = "Photos :",
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.padding(bottom = dimensionResource(id = R.dimen.padding_medium)) // Espacement en bas
+            )
+
+            // Bouton pour ajouter des photos (placé sous le texte "Photos :")
             Button(
-                onClick = { navController.navigate("${enumScreen.Activity.name}/${activityId}") },
+                onClick = { /*TODO: Ajouter une fonction pour ajouter des photos*/ },
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6200EE)),
-                shape = RoundedCornerShape(dimensionResource(id = R.dimen.padding_small))
+                shape = RoundedCornerShape(dimensionResource(id = R.dimen.padding_small)),
+                modifier = Modifier
+                    .fillMaxWidth() // Remplir la largeur disponible
+                    .padding(bottom = dimensionResource(id = R.dimen.padding_medium)) // Espacement en bas
             ) {
-                Text(text = "Valider")
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    contentDescription = stringResource(R.string.add_photos_description)
+                )
+                Spacer(modifier = Modifier.width(8.dp)) // Espacement entre l'icône et le texte (optionnel)
+                Text(text = "Ajouter Photo") // Ajout d'un texte au bouton pour plus de clarté
+            }
+
+            // Bouton de validation
+            Row(
+                horizontalArrangement = Arrangement.End,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = dimensionResource(id = R.dimen.padding_medium)) // Espacement en haut
+            ) {
+                Button(
+                    onClick = { navController.navigate("${enumScreen.Activity.name}/${activityId}") },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6200EE)),
+                    shape = RoundedCornerShape(dimensionResource(id = R.dimen.padding_small))
+                ) {
+                    Text(text = "Valider")
+                }
             }
         }
+    }else {
+        Text(text = "Chargement en cours...")
     }
+
 }
 
 @Preview(showBackground = true)

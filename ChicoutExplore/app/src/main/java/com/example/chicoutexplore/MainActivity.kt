@@ -42,6 +42,8 @@ import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -49,9 +51,10 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import coil.compose.AsyncImage
 import com.example.chicoutexplore.Screen.ActivityScreen
 import com.example.chicoutexplore.Screen.FeedbackFormScreen
-import com.example.chicoutexplore.Screen.MapScreen
+import com.example.chicoutexplore.Screen.MapComposable
 import com.example.chicoutexplore.Screen.SearchResultScreen
 import com.example.chicoutexplore.Screen.SettingScreen
 import com.example.chicoutexplore.ui.theme.ChicoutExploreTheme
@@ -147,7 +150,7 @@ fun ChicoutExploreApp(navController: NavHostController = rememberNavController()
         ) {
             composable(route = enumScreen.Map.name) {
                 //Appel de l'écran map
-                //MapScreen(navController)
+                MapComposable(context = LocalContext.current,navController)
             }
             composable(route = "${enumScreen.Activity.name}/{activityId}") { backStackEntry ->
                 val activityId = backStackEntry.arguments?.getString("activityId") ?: "Unknown"
@@ -213,6 +216,16 @@ fun fetchActivityById(activityId: String, onComplete: (Activity?) -> Unit) {
         }
 }
 
+/** affichage des photos**/
+@Composable
+fun DisplayImageFromUrl(photoUrl: String) {
+    AsyncImage(
+        model = photoUrl,
+        contentDescription = null,
+        modifier = Modifier.size(200.dp), // ajustez la taille selon vos besoins
+        contentScale = ContentScale.Crop // pour adapter l'image au conteneur
+    )
+}
 
 @Preview(showBackground = true)
 @Composable
