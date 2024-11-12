@@ -36,6 +36,7 @@ import com.example.chicoutexplore.ui.theme.ChicoutExploreTheme
 @Composable
 fun ActivityScreen(activityId: String,navController: NavHostController) {
     var activity by remember { mutableStateOf<Activity?>(null) }
+
     // Lance la récupération de données pour l'activité
     LaunchedEffect(activityId) {
         fetchActivityById(activityId) { fetchedActivity ->
@@ -85,7 +86,7 @@ fun ActivityScreen(activityId: String,navController: NavHostController) {
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text(text = "Prix : ${activity?.prix}", style = MaterialTheme.typography.bodyMedium)
+                Text(text = "Prix : ${activity?.prix} $", style = MaterialTheme.typography.bodyMedium)
             }
 
             // Espacement entre le prix et la location
