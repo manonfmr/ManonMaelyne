@@ -24,6 +24,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.chicoutexplore.Activity
 import com.example.chicoutexplore.DisplayImageFromUrl
@@ -37,8 +38,12 @@ import com.example.chicoutexplore.ui.theme.ChicoutExploreTheme
 fun ActivityScreen(activityId: String,navController: NavHostController) {
     var activity by remember { mutableStateOf<Activity?>(null) }
 
-    // Lance la récupération de données pour l'activité
-    LaunchedEffect(activityId) {
+    // Détecte les changements dans le NavBackStackEntry pour recharger les données lorsque l'utilisateur revient sur la page
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+
+    // Charger les données dès que l'on arrive sur la page ou si le retour est déclenché
+    LaunchedEffect(navBackStackEntry) {
+        // Recharger les données de l'activité à chaque retour sur la page
         fetchActivityById(activityId) { fetchedActivity ->
             activity = fetchedActivity
         }

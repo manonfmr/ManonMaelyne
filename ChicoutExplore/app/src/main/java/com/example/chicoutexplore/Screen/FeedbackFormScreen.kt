@@ -47,9 +47,11 @@ fun FeedbackFormScreen(activityId: String,navController: NavHostController) {
     var prix by remember { mutableStateOf("") } // État pour le champ de texte du prix
     var photos by remember { mutableStateOf(listOf<String>()) } // Liste d'URLs de photos
     var errorMessage by remember { mutableStateOf("") }  // Message d'erreur pour la validation
+    var isUpdating by remember { mutableStateOf(false) } // Indicateur d'état pour l'opération de mise à jour
+
 
     // Fonction pour mettre à jour l'activité dans la base de données
-    fun updateActivity(activityId: String, prix: String, commentaire: String, photos: List<String>) {
+    fun updateActivity(activityId: String, prix: String, commentaire: String, photos: List<String>,onSuccess: () -> Unit) {
         // Référence à la base de données Firestore
         val db = FirebaseFirestore.getInstance()
 
@@ -80,6 +82,7 @@ fun FeedbackFormScreen(activityId: String,navController: NavHostController) {
                     db.collection("Activities").document(activityId)
                         .set(activityUpdates, SetOptions.merge())
                         .addOnSuccessListener {
+                            onSuccess()
                             // Afficher un message ou faire une action lorsque l'update est réussi
                             println("Activité mise à jour avec succès")
                         }
@@ -204,8 +207,14 @@ fun FeedbackFormScreen(activityId: String,navController: NavHostController) {
                     .padding(top = dimensionResource(id = R.dimen.padding_medium)) // Espacement en haut
             ) {
                 Button(
-                    onClick = { updateActivity(activityId, prix, commentaire, photos)
-                        navController.navigate("${enumScreen.Activity.name}/${activityId}") },
+                    onClick = {
+                        isUpdating = true // Définir l'état de mise à jour
+                        updateActivity(activityId, prix, commentaire, emptyList()) {
+                            isUpdating = false // Fin de l'état de mise à jour
+                            navController.navigate("${enumScreen.Activity.name}/${activityId}")
+                        }
+                    },
+                    enabled = !isUpdating, // Désactiver le bouton pendant la mise à jour
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6200EE)),
                     shape = RoundedCornerShape(dimensionResource(id = R.dimen.padding_small))
                 ) {

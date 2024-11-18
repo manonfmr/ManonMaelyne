@@ -53,11 +53,13 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
 import com.example.chicoutexplore.Screen.ActivityScreen
+import com.example.chicoutexplore.Screen.AddActivityScreen
 import com.example.chicoutexplore.Screen.FeedbackFormScreen
 import com.example.chicoutexplore.Screen.MapComposable
 import com.example.chicoutexplore.Screen.SearchResultScreen
 import com.example.chicoutexplore.Screen.SettingScreen
 import com.example.chicoutexplore.ui.theme.ChicoutExploreTheme
+import com.google.firebase.firestore.QuerySnapshot
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.firestore.ktx.firestore
 
@@ -79,7 +81,8 @@ enum class enumScreen(){
     Activity,
     SearchResult,
     Setting,
-    feedbackForm
+    feedbackForm,
+    AddActivity
 }
 
 
@@ -158,7 +161,7 @@ fun ChicoutExploreApp(navController: NavHostController = rememberNavController()
             }
             composable(route = enumScreen.SearchResult.name) {
                 //Appel de l'écran resultat de recherche
-                SearchResultScreen()
+                SearchResultScreen(navController)
             }
             composable(route = enumScreen.Setting.name) {
                 //Appel de l'écran Paramètre
@@ -168,6 +171,9 @@ fun ChicoutExploreApp(navController: NavHostController = rememberNavController()
                 //Appel de l'écran formulaire avis
                 val activityId = backStackEntry.arguments?.getString("activityId") ?: "Unknown"
                 FeedbackFormScreen(activityId,navController)
+            }
+            composable(route = enumScreen.AddActivity.name) {
+                AddActivityScreen(navController)
             }
 
 
@@ -213,6 +219,53 @@ fun fetchActivityById(activityId: String, onComplete: (Activity?) -> Unit) {
         .addOnFailureListener { exception ->
             exception.printStackTrace()
             onComplete(null) // Erreur lors de la récupération des données
+        }
+}
+
+/** Récurération de l'id max **/
+fun getMaxDocumentId(onResult: (String) -> Unit) {
+    // Référence à la base de données Firestore
+    val db = Firebase.firestore
+
+    // Requête pour récupérer tous les documents de la collection "Activities"
+    db.collection("Activities")
+        .get()
+        .addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                val documents: QuerySnapshot? = task.result
+                var maxIdInt = Int.MIN_VALUE
+
+                // Parcourir les documents et chercher le plus grand ID
+                for (document in documents!!) {
+                    val documentId = document.id // ID du document (en tant que chaîne)
+
+                    try {
+                        // Convertir l'ID en entier
+                        val idNumber = documentId.toInt()
+
+                        // Mettre à jour le maxId si l'ID trouvé est plus grand
+                        if (idNumber > maxIdInt) {
+                            maxIdInt = idNumber
+                        }
+                    } catch (e: NumberFormatException) {
+                        // Si l'ID n'est pas un nombre, on l'ignore
+                        e.printStackTrace()
+                    }
+                }
+
+                // Retourner le plus grand ID trouvé ou un message d'erreur
+                val result = if (maxIdInt != Int.MIN_VALUE) {
+                    maxIdInt.toString() // Convertir en chaîne
+                } else {
+                    "Aucun ID valide trouvé."
+                }
+
+                // Appeler la fonction onResult pour retourner le résultat
+                onResult(result)
+            } else {
+                // Si une erreur se produit lors de la récupération des documents
+                onResult("Erreur lors de la récupération des documents.")
+            }
         }
 }
 
