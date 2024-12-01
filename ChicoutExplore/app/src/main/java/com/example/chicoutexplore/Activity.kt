@@ -1,5 +1,6 @@
 package com.example.chicoutexplore
 
+//Classe de donnée qui représente les activités de la base de données
 data class Activity(val id: String = "",
                     val nom: String = "",
                     val description: String = "",

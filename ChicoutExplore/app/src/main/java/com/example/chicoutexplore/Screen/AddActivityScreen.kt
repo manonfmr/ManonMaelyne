@@ -14,16 +14,10 @@ import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.engine.cio.*
 import io.ktor.client.request.*
-import io.ktor.client.statement.*
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
-import kotlin.coroutines.resume
-import kotlin.coroutines.suspendCoroutine
-import com.google.firebase.firestore.Query
-import com.google.firebase.firestore.FieldPath
 import com.google.firebase.firestore.QuerySnapshot
-import kotlinx.coroutines.tasks.await
 
 @Serializable
 data class NominatimResponse(
@@ -100,7 +94,7 @@ fun AddActivityScreen(navController: NavHostController) {
         val client = HttpClient(CIO)
         return try {
             val response: String = client.get("https://nominatim.openstreetmap.org/search") {
-                parameter("q", address)
+                parameter("q", "$address,Canada") //Bloquage des adresses au Canada
                 parameter("format", "json")
             }.body()
 
@@ -155,9 +149,9 @@ fun AddActivityScreen(navController: NavHostController) {
             id=id
         )
 
-        // Utiliser maxId comme ID du document et ajouter le champ "id"
+        // Utiliser maxId comme ID du document
         db.collection("Activities")
-            .document(id) // Utiliser maxId comme ID du document
+            .document(id)
             .set(newActivity)
             .addOnSuccessListener {
                 isSubmitting = false
@@ -219,7 +213,7 @@ fun AddActivityScreen(navController: NavHostController) {
         OutlinedTextField(
             value = adresse,
             onValueChange = { adresse = it },
-            label = { Text("Adresse") },
+            label = { Text("Adresse (avec la ville) ") },
             modifier = Modifier.fillMaxWidth()
         )
 
@@ -257,22 +251,24 @@ fun AddActivityScreen(navController: NavHostController) {
                         val (lat, lon) = coordinates
                         latitude = lat
                         longitude = lon
+
+                        // Une fois les coordonnées obtenues créer l'activité
+                        createActivity(
+                            nom,
+                            description,
+                            location,
+                            prix,
+                            adresse,
+                            avis.split(", "),
+                            latitude,
+                            longitude,
+                            maxId // Passer maxId comme ID
+                        )
+
                     } else {
                         errorMessage = "Impossible de récupérer les coordonnées pour l'adresse : $adresse"
                     }
 
-                    // Une fois les coordonnées obtenues ou l'erreur gérée, créer l'activité
-                    createActivity(
-                        nom,
-                        description,
-                        location,
-                        prix,
-                        adresse,
-                        avis.split(", "),
-                        latitude,
-                        longitude,
-                        maxId // Passer maxId comme ID
-                    )
 
                     isLoading = false
                 }

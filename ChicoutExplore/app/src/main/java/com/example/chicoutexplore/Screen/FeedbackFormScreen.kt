@@ -1,5 +1,9 @@
 package com.example.chicoutexplore.Screen
 
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -7,6 +11,8 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -25,12 +31,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import coil.compose.rememberAsyncImagePainter
 import com.example.chicoutexplore.Activity
 import com.example.chicoutexplore.R
 import com.example.chicoutexplore.enumScreen
@@ -39,15 +47,28 @@ import com.example.chicoutexplore.ui.theme.ChicoutExploreTheme
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
 
+
 @Composable
 fun FeedbackFormScreen(activityId: String,navController: NavHostController) {
 
     var activity by remember { mutableStateOf<Activity?>(null) }
     var commentaire by remember { mutableStateOf("") } // État pour le champ de texte
     var prix by remember { mutableStateOf("") } // État pour le champ de texte du prix
-    var photos by remember { mutableStateOf(listOf<String>()) } // Liste d'URLs de photos
+    var photos by remember { mutableStateOf(listOf<Uri>()) } // Liste d'URLs de photos
     var errorMessage by remember { mutableStateOf("") }  // Message d'erreur pour la validation
     var isUpdating by remember { mutableStateOf(false) } // Indicateur d'état pour l'opération de mise à jour
+
+    // Launcher pour sélectionner des photos
+    val imagePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent(),
+        onResult = { uri ->
+            if (uri != null) {
+
+                // Ajouter l'URI à la liste des photos
+                photos = photos + uri
+            }
+        }
+    )
 
 
     // Fonction pour mettre à jour l'activité dans la base de données
@@ -76,7 +97,8 @@ fun FeedbackFormScreen(activityId: String,navController: NavHostController) {
                     // Préparer les données à mettre à jour
                     val activityUpdates = hashMapOf<String, Any>(
                         "prix" to prixDouble, // Mise à jour du prix
-                        "avis" to avisMisAJour // Ajout du commentaire à la liste des avis
+                        "avis" to avisMisAJour, // Ajout du commentaire à la liste des avis
+                        "urlsPhoto" to photos
                     )
 
                     db.collection("Activities").document(activityId)
@@ -179,24 +201,41 @@ fun FeedbackFormScreen(activityId: String,navController: NavHostController) {
             Text(
                 text = "Photos :",
                 style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.padding(bottom = dimensionResource(id = R.dimen.padding_medium)) // Espacement en bas
+                modifier = Modifier.padding(bottom = dimensionResource(id = R.dimen.padding_medium))
             )
 
-            // Bouton pour ajouter des photos (placé sous le texte "Photos :")
+            // Liste des photos sélectionnées
+            LazyRow(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                items(photos) { photoUri ->
+                    Image(
+                        painter = rememberAsyncImagePainter(model = photoUri),
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .size(100.dp)
+                            .aspectRatio(1f)
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Bouton pour ajouter une photo
             Button(
-                onClick = { /*TODO: Ajouter une fonction pour ajouter des photos*/ },
+                onClick = { imagePickerLauncher.launch("image/*") },
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6200EE)),
-                shape = RoundedCornerShape(dimensionResource(id = R.dimen.padding_small)),
-                modifier = Modifier
-                    .fillMaxWidth() // Remplir la largeur disponible
-                    .padding(bottom = dimensionResource(id = R.dimen.padding_medium)) // Espacement en bas
+                shape = RoundedCornerShape(8.dp),
+                modifier = Modifier.fillMaxWidth()
             ) {
                 Icon(
                     imageVector = Icons.Default.Add,
                     contentDescription = stringResource(R.string.add_photos_description)
                 )
-                Spacer(modifier = Modifier.width(8.dp)) // Espacement entre l'icône et le texte (optionnel)
-                Text(text = "Ajouter Photo") // Ajout d'un texte au bouton pour plus de clarté
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("Ajouter Photo")
             }
 
             // Bouton de validation
@@ -227,6 +266,7 @@ fun FeedbackFormScreen(activityId: String,navController: NavHostController) {
     }
 
 }
+
 
 @Preview(showBackground = true)
 @Composable

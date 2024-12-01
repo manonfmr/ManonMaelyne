@@ -1,23 +1,26 @@
 package com.example.chicoutexplore
 
+import android.content.Context
+import android.net.Uri
 import android.os.Bundle
+import android.provider.MediaStore
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.navigation.compose.NavHost
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.LocationOn
@@ -34,24 +37,21 @@ import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import coil.compose.AsyncImage
 import com.example.chicoutexplore.Screen.ActivityScreen
 import com.example.chicoutexplore.Screen.AddActivityScreen
 import com.example.chicoutexplore.Screen.FeedbackFormScreen
@@ -59,23 +59,67 @@ import com.example.chicoutexplore.Screen.MapComposable
 import com.example.chicoutexplore.Screen.SearchResultScreen
 import com.example.chicoutexplore.Screen.SettingScreen
 import com.example.chicoutexplore.ui.theme.ChicoutExploreTheme
-import com.google.firebase.firestore.QuerySnapshot
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.firestore.ktx.firestore
+import com.google.accompanist.systemuicontroller.rememberSystemUiController
+import android.Manifest
 
 class MainActivity : ComponentActivity() {
+    private lateinit var locationPermissionLauncher: ActivityResultLauncher<String>
+
     override fun onCreate(savedInstanceState: Bundle?) {
+
         super.onCreate(savedInstanceState)
+        // Active les bords à bords (edge-to-edge)
         enableEdgeToEdge()
 
+        // Initialisation du locationPermissionLauncher
+        locationPermissionLauncher = registerForActivityResult(
+            ActivityResultContracts.RequestPermission()
+        ) { isGranted ->
+            if (isGranted) {
+                Log.i("Permissions", "Permission de localisation accordée")
+            } else {
+                Log.w("Permissions", "Permission de localisation refusée")
+            }
+        }
+        // Vérifiez si la permission est déjà accordée
+        val isGranted = ContextCompat.checkSelfPermission(
+            this,
+            Manifest.permission.ACCESS_FINE_LOCATION
+        ) == android.content.pm.PackageManager.PERMISSION_GRANTED
+
+        if (!isGranted) {
+            locationPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+        }
+
         setContent {
+            // Obtenir le contrôleur System UI
+            val systemUiController = rememberSystemUiController()
+            val isDarkTheme = isSystemInDarkTheme() // Vérifie si le mode sombre est actif
+
+
+            LaunchedEffect(isDarkTheme) {
+                // Configurer les couleurs et les icônes en fonction du thème
+                systemUiController.setStatusBarColor(
+                    color = Color.Transparent, // Fond transparent
+                    darkIcons = !isDarkTheme // Icônes sombres en mode clair, icônes claires en mode sombre
+                )
+                systemUiController.isNavigationBarVisible = false // Cache la barre de navigation
+            }
+
+            // Appliquer le thème et lancer l'application
             ChicoutExploreTheme {
                 ChicoutExploreApp()
             }
         }
+
     }
 }
 
+
+
+//Enumération des différentes pages
 enum class enumScreen(){
     Map,
     Activity,
@@ -85,7 +129,7 @@ enum class enumScreen(){
     AddActivity
 }
 
-
+//Function qui contient le Header et footer et réalise la navigation
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ChicoutExploreApp(navController: NavHostController = rememberNavController()) {
@@ -155,7 +199,9 @@ fun ChicoutExploreApp(navController: NavHostController = rememberNavController()
                 //Appel de l'écran map
                 MapComposable(context = LocalContext.current,navController)
             }
-            composable(route = "${enumScreen.Activity.name}/{activityId}") { backStackEntry ->
+            composable(route = "${enumScreen.Activity.name}/{activityId}") {
+                //Appel à l'écran de l'activité en récupérant son id
+                backStackEntry ->
                 val activityId = backStackEntry.arguments?.getString("activityId") ?: "Unknown"
                 ActivityScreen(activityId, navController)
             }
@@ -173,6 +219,7 @@ fun ChicoutExploreApp(navController: NavHostController = rememberNavController()
                 FeedbackFormScreen(activityId,navController)
             }
             composable(route = enumScreen.AddActivity.name) {
+                // Appel à l'écran de l'ajout d'activité
                 AddActivityScreen(navController)
             }
 
@@ -222,63 +269,16 @@ fun fetchActivityById(activityId: String, onComplete: (Activity?) -> Unit) {
         }
 }
 
-/** Récurération de l'id max **/
-fun getMaxDocumentId(onResult: (String) -> Unit) {
-    // Référence à la base de données Firestore
-    val db = Firebase.firestore
-
-    // Requête pour récupérer tous les documents de la collection "Activities"
-    db.collection("Activities")
-        .get()
-        .addOnCompleteListener { task ->
-            if (task.isSuccessful) {
-                val documents: QuerySnapshot? = task.result
-                var maxIdInt = Int.MIN_VALUE
-
-                // Parcourir les documents et chercher le plus grand ID
-                for (document in documents!!) {
-                    val documentId = document.id // ID du document (en tant que chaîne)
-
-                    try {
-                        // Convertir l'ID en entier
-                        val idNumber = documentId.toInt()
-
-                        // Mettre à jour le maxId si l'ID trouvé est plus grand
-                        if (idNumber > maxIdInt) {
-                            maxIdInt = idNumber
-                        }
-                    } catch (e: NumberFormatException) {
-                        // Si l'ID n'est pas un nombre, on l'ignore
-                        e.printStackTrace()
-                    }
-                }
-
-                // Retourner le plus grand ID trouvé ou un message d'erreur
-                val result = if (maxIdInt != Int.MIN_VALUE) {
-                    maxIdInt.toString() // Convertir en chaîne
-                } else {
-                    "Aucun ID valide trouvé."
-                }
-
-                // Appeler la fonction onResult pour retourner le résultat
-                onResult(result)
-            } else {
-                // Si une erreur se produit lors de la récupération des documents
-                onResult("Erreur lors de la récupération des documents.")
-            }
-        }
+/** modifiaction du chemin des photos**/
+fun getRealPathFromURI(context: Context, uri: Uri): String? {
+    val cursor = context.contentResolver.query(uri, null, null, null, null)
+    return cursor?.use {
+        it.moveToFirst()
+        val index = it.getColumnIndex(MediaStore.Images.Media.DATA)
+        it.getString(index)
+    }
 }
 
-/** affichage des photos**/
-@Composable
-fun DisplayImageFromUrl(photoUrl: String) {
-    AsyncImage(
-        model = photoUrl,
-        contentDescription = null,
-        modifier = Modifier.size(200.dp), // ajustez la taille selon vos besoins
-        contentScale = ContentScale.Crop // pour adapter l'image au conteneur
-    )
-}
 
 @Preview(showBackground = true)
 @Composable

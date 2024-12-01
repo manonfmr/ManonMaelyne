@@ -1,12 +1,14 @@
 package com.example.chicoutexplore.Screen
 
-import androidx.compose.foundation.background
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -19,6 +21,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -26,11 +29,10 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import coil.compose.rememberAsyncImagePainter
 import com.example.chicoutexplore.Activity
-import com.example.chicoutexplore.DisplayImageFromUrl
 import com.example.chicoutexplore.R
 import com.example.chicoutexplore.enumScreen
-import com.example.chicoutexplore.fetchActivities
 import com.example.chicoutexplore.fetchActivityById
 import com.example.chicoutexplore.ui.theme.ChicoutExploreTheme
 
@@ -39,6 +41,7 @@ fun ActivityScreen(activityId: String,navController: NavHostController) {
     var activity by remember { mutableStateOf<Activity?>(null) }
 
     // Détecte les changements dans le NavBackStackEntry pour recharger les données lorsque l'utilisateur revient sur la page
+    //Pour mettre à jour les données juste après modifications
     val navBackStackEntry by navController.currentBackStackEntryAsState()
 
     // Charger les données dès que l'on arrive sur la page ou si le retour est déclenché
@@ -68,15 +71,15 @@ fun ActivityScreen(activityId: String,navController: NavHostController) {
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6200EE)),
                 shape = RoundedCornerShape(dimensionResource(id = R.dimen.padding_small)),
                 modifier = Modifier
-                    .fillMaxWidth() // Remplir la largeur disponible
-                    .padding(bottom = dimensionResource(id = R.dimen.padding_small)) // Espacement en bas
+                    .fillMaxWidth()
+                    .padding(bottom = dimensionResource(id = R.dimen.padding_small))
             ) {
                 Icon(
                     imageVector = Icons.Default.Edit,
                     contentDescription = stringResource(R.string.edit_icon_description)
                 )
-                Spacer(modifier = Modifier.width(8.dp)) // Espacement entre l'icône et le texte (optionnel)
-                Text(text = "Modifier") // Ajout d'un texte au bouton pour plus de clarté
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(text = "Compléter l'activité")
             }
 
             // Description de l'activité
@@ -116,25 +119,35 @@ fun ActivityScreen(activityId: String,navController: NavHostController) {
                 modifier = Modifier.padding(bottom = dimensionResource(id = R.dimen.padding_small))
             )
 
+            if (activity?.urlsPhoto.isNullOrEmpty()) {
+                Text(
+                    text = "Aucune photo disponible.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Color.Gray
+                )
+            } else {
+                LazyRow(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = dimensionResource(id = R.dimen.padding_medium))
+                ) {
+                    items(activity!!.urlsPhoto.size) { index ->
+                        ImageCard(imageUrl = activity!!.urlsPhoto[index])
+                    }
+                }
+            }
+
             // Avis sur l'activité
             Text(
                 text = "Avis :",
                 style = MaterialTheme.typography.bodyMedium
             )
 
-//            Row{
-//                if(activity?.urlsPhoto.isNullOrEmpty()){
-//                    for (url in activity!!.urlsPhoto) {
-//                        DisplayImageFromUrl(url);
-//                    }
-//                }
-//
-//            }
-
-            Row{
+            Column{
                 if(!activity?.avis.isNullOrEmpty()){
                     for (avis in activity!!.avis) {
-                        Text(text = avis) //ajouter saut de ligne
+                        Text(text = avis)
 
                     }
                 }
@@ -145,6 +158,22 @@ fun ActivityScreen(activityId: String,navController: NavHostController) {
         Text(text = "Chargement en cours...")
     }
 
+}
+
+@Composable
+fun ImageCard(imageUrl: String) {
+    Card(
+        shape = RoundedCornerShape(8.dp),
+        modifier = Modifier
+            .size(150.dp) // Taille ajustable des images
+    ) {
+        Image(
+            painter = rememberAsyncImagePainter(imageUrl),
+            contentDescription = null,
+            contentScale = ContentScale.Crop,
+            modifier = Modifier.fillMaxSize()
+        )
+    }
 }
 
 @Preview(showBackground = true)
