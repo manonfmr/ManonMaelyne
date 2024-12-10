@@ -163,6 +163,29 @@ fun AddActivityScreen(navController: NavHostController) {
             }
     }
 
+    // Fonction pour valider les champs obligatoires
+    fun validateFields(): Boolean {
+        return when {
+            nom.isBlank() -> {
+                errorMessage = "Le nom de l'activité est obligatoire."
+                false
+            }
+            description.isBlank() -> {
+                errorMessage = "La description est obligatoire."
+                false
+            }
+            prix.isBlank() -> {
+                errorMessage = "Le prix est obligatoire."
+                false
+            }
+            adresse.isBlank() -> {
+                errorMessage = "L'adresse est obligatoire."
+                false
+            }
+            else -> true
+        }
+    }
+
     // Appel de la fonction pour récupérer le max ID avant de créer une activité
     LaunchedEffect(Unit) {
         getMaxDocumentId { result ->
@@ -184,14 +207,14 @@ fun AddActivityScreen(navController: NavHostController) {
         OutlinedTextField(
             value = nom,
             onValueChange = { nom = it },
-            label = { Text("Nom de l'activité ") },
+            label = { Text("Nom de l'activité * ") },
             modifier = Modifier.fillMaxWidth()
         )
 
         OutlinedTextField(
             value = description,
             onValueChange = { description = it },
-            label = { Text("Description") },
+            label = { Text("Description *") },
             modifier = Modifier.fillMaxWidth()
         )
 
@@ -205,7 +228,7 @@ fun AddActivityScreen(navController: NavHostController) {
         OutlinedTextField(
             value = prix,
             onValueChange = { prix = it },
-            label = { Text("Prix") },
+            label = { Text("Prix *") },
             modifier = Modifier.fillMaxWidth(),
             placeholder = { Text("Exemple : 25.0") }
         )
@@ -213,7 +236,7 @@ fun AddActivityScreen(navController: NavHostController) {
         OutlinedTextField(
             value = adresse,
             onValueChange = { adresse = it },
-            label = { Text("Adresse (avec la ville) ") },
+            label = { Text("Adresse (avec la ville) *") },
             modifier = Modifier.fillMaxWidth()
         )
 
@@ -246,34 +269,35 @@ fun AddActivityScreen(navController: NavHostController) {
                     isLoading = true
                     errorMessage = null  // Réinitialiser l'erreur
 
-                    val coordinates = getCoordinates(adresse)
-                    if (coordinates != null) {
-                        val (lat, lon) = coordinates
-                        latitude = lat
-                        longitude = lon
+                    // Valider les champs obligatoires
+                    if (validateFields()) {
+                        val coordinates = getCoordinates(adresse)
+                        if (coordinates != null) {
+                            val (lat, lon) = coordinates
+                            latitude = lat
+                            longitude = lon
 
-                        // Une fois les coordonnées obtenues créer l'activité
-                        createActivity(
-                            nom,
-                            description,
-                            location,
-                            prix,
-                            adresse,
-                            avis.split(", "),
-                            latitude,
-                            longitude,
-                            maxId // Passer maxId comme ID
-                        )
-
-                    } else {
-                        errorMessage = "Impossible de récupérer les coordonnées pour l'adresse : $adresse"
+                            createActivity(
+                                nom,
+                                description,
+                                location,
+                                prix,
+                                adresse,
+                                avis.split(", "),
+                                latitude,
+                                longitude,
+                                maxId
+                            )
+                        } else {
+                            errorMessage = "Impossible de récupérer les coordonnées pour l'adresse : $adresse"
+                        }
                     }
 
 
                     isLoading = false
                 }
             },
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6200EE)),
+            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF8BC34A)),
             shape = RoundedCornerShape(8.dp),
             modifier = Modifier.fillMaxWidth()
         ) {

@@ -63,10 +63,17 @@ import com.google.firebase.ktx.Firebase
 import com.google.firebase.firestore.ktx.firestore
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import android.Manifest
+import android.os.Build
+import androidx.annotation.RequiresApi
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.width
+import androidx.compose.ui.text.font.FontWeight
 
 class MainActivity : ComponentActivity() {
     private lateinit var locationPermissionLauncher: ActivityResultLauncher<String>
 
+
+    @RequiresApi(Build.VERSION_CODES.M)
     override fun onCreate(savedInstanceState: Bundle?) {
 
         super.onCreate(savedInstanceState)
@@ -130,6 +137,7 @@ enum class enumScreen(){
 }
 
 //Function qui contient le Header et footer et réalise la navigation
+@RequiresApi(Build.VERSION_CODES.M)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ChicoutExploreApp(navController: NavHostController = rememberNavController()) {
@@ -142,13 +150,16 @@ fun ChicoutExploreApp(navController: NavHostController = rememberNavController()
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
                         text = stringResource(R.string.app_name),
-                        style = MaterialTheme.typography.titleLarge
+                        style = MaterialTheme.typography.titleLarge.copy(
+                            fontWeight = FontWeight.Bold
+                        )
                     )
+                    Spacer(modifier = Modifier.width(8.dp))
                     Image(
                         modifier = Modifier
                             .size(dimensionResource(id = R.dimen.image_size))
                             .padding(dimensionResource(id = R.dimen.padding_small)),
-                        painter = painterResource(R.drawable.ic_launcher_foreground),
+                        painter = painterResource(R.drawable.ic_launcher_foreground_green),
                         contentDescription = null
                     )
                 }
@@ -157,9 +168,10 @@ fun ChicoutExploreApp(navController: NavHostController = rememberNavController()
         bottomBar = {
             Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier
                 .fillMaxWidth()
-                .height(120.dp)){
-                Button(onClick = { navController.navigate(enumScreen.Map.name)},colors = if (currentRoute == enumScreen.Map.name) ButtonDefaults.buttonColors(Color.Blue)
-                else ButtonDefaults.buttonColors(), modifier = Modifier
+                .height(110.dp)){
+                Button(onClick = { navController.navigate(enumScreen.Map.name)}, colors = ButtonDefaults.buttonColors(
+                    containerColor = if (currentRoute == enumScreen.Map.name) Color(0xFF8BC34A) else Color(0xFFE0E0E0)
+                ), modifier = Modifier
                     .weight(1f)
                     .fillMaxHeight(),shape = RoundedCornerShape(0.dp)) {
                     Icon(
@@ -169,7 +181,9 @@ fun ChicoutExploreApp(navController: NavHostController = rememberNavController()
                         modifier = Modifier.size(dimensionResource(id = R.dimen.image_size))
                     )
                 }
-                Button(onClick = { navController.navigate(enumScreen.SearchResult.name) }, colors = if (currentRoute == enumScreen.SearchResult.name) ButtonDefaults.buttonColors(Color.Blue) else ButtonDefaults.buttonColors(),modifier = Modifier
+                Button(onClick = { navController.navigate(enumScreen.SearchResult.name) },  colors = ButtonDefaults.buttonColors(
+                    containerColor = if (currentRoute == enumScreen.SearchResult.name) Color(0xFF8BC34A) else Color(0xFFE0E0E0)
+                ),modifier = Modifier
                     .weight(1f)
                     .fillMaxHeight(),shape = RoundedCornerShape(0.dp),) {
                     Icon(
@@ -179,7 +193,9 @@ fun ChicoutExploreApp(navController: NavHostController = rememberNavController()
                         modifier = Modifier.size(dimensionResource(id = R.dimen.image_size))
                     )
                 }
-                Button(onClick = { navController.navigate(enumScreen.Setting.name)}, colors = if (currentRoute == enumScreen.Setting.name) ButtonDefaults.buttonColors(Color.Blue) else ButtonDefaults.buttonColors(),modifier = Modifier
+                Button(onClick = { navController.navigate(enumScreen.Setting.name)},  colors = ButtonDefaults.buttonColors(
+                    containerColor = if (currentRoute == enumScreen.Setting.name) Color(0xFF8BC34A) else Color(0xFFE0E0E0)
+                ),modifier = Modifier
                     .weight(1f)
                     .fillMaxHeight(),shape = RoundedCornerShape(0.dp), ) {
                     Icon(imageVector = Icons.Default.Settings,
@@ -269,17 +285,9 @@ fun fetchActivityById(activityId: String, onComplete: (Activity?) -> Unit) {
         }
 }
 
-/** modifiaction du chemin des photos**/
-fun getRealPathFromURI(context: Context, uri: Uri): String? {
-    val cursor = context.contentResolver.query(uri, null, null, null, null)
-    return cursor?.use {
-        it.moveToFirst()
-        val index = it.getColumnIndex(MediaStore.Images.Media.DATA)
-        it.getString(index)
-    }
-}
 
 
+@RequiresApi(Build.VERSION_CODES.M)
 @Preview(showBackground = true)
 @Composable
 fun GreetingPreview() {

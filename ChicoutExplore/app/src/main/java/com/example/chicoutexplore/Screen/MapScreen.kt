@@ -9,6 +9,7 @@ import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.FloatingActionButton
@@ -118,12 +119,13 @@ fun MapComposable(context: Context, navController: NavHostController, modifier: 
                 .align(Alignment.BottomEnd)
                 .padding(16.dp)
                 .shadow(elevation = 8.dp), // Ombre pour donner un effet flottant
-            containerColor = MaterialTheme.colorScheme.primary,
+            containerColor = Color(0xFF8BC34A),
             contentColor = Color.White,
             content = {
                 Icon(
                     imageVector = Icons.Default.Add,
-                    contentDescription = "Ajouter une activité"
+                    contentDescription = "Ajouter une activité",
+                    modifier = Modifier.size(30.dp)
                 )
             }
         )

@@ -16,9 +16,11 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -88,9 +90,13 @@ fun FeedbackFormScreen(activityId: String,navController: NavHostController) {
         db.collection("Activities").document(activityId).get()
             .addOnSuccessListener { documentSnapshot ->
                 if (documentSnapshot.exists()) {
+                    // Récupérer la liste des url actuelle, ou créer une nouvelle liste si elle n'existe pas
+                    val urlActuels = documentSnapshot.get("urlsPhoto") as? List<String> ?: listOf()
+
                     // Récupérer la liste des avis actuelle, ou créer une nouvelle liste si elle n'existe pas
                     val avisActuels = documentSnapshot.get("avis") as? List<String> ?: listOf()
 
+                    val urlMisAJour = urlActuels + photos
                     // Créer une nouvelle liste d'avis avec le nouveau commentaire ajouté
                     val avisMisAJour = avisActuels + commentaire
 
@@ -98,7 +104,7 @@ fun FeedbackFormScreen(activityId: String,navController: NavHostController) {
                     val activityUpdates = hashMapOf<String, Any>(
                         "prix" to prixDouble, // Mise à jour du prix
                         "avis" to avisMisAJour, // Ajout du commentaire à la liste des avis
-                        "urlsPhoto" to photos
+                        "urlsPhoto" to urlMisAJour
                     )
 
                     db.collection("Activities").document(activityId)
@@ -144,12 +150,32 @@ fun FeedbackFormScreen(activityId: String,navController: NavHostController) {
                 .padding(dimensionResource(id = R.dimen.padding_medium)),
             verticalArrangement = Arrangement.Top
         ) {
-            // Titre de l'écran de feedback
-            Text(
-                text = "Avis : ${activity?.nom}",
-                style = MaterialTheme.typography.titleLarge,
-                modifier = Modifier.padding(bottom = dimensionResource(id = R.dimen.padding_medium)) // Espacement en bas
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Titre de l'écran de feedback
+                Text(
+                    text = "Avis : ${activity?.nom}",
+                    style = MaterialTheme.typography.titleLarge,
+                    modifier = Modifier
+                        .padding(bottom = dimensionResource(id = R.dimen.padding_medium)) // Espacement en bas
+                        .weight(1f) // Cette propriété pousse le bouton à droite
+                )
+
+                // Bouton flottant de retour à droite
+                IconButton(
+                    onClick = { navController.popBackStack() },
+                    modifier = Modifier.padding(start = 16.dp) // Espacement du bouton
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.ArrowBack,
+                        contentDescription = "Bouton de retour"
+                    )
+                }
+            }
+
+
 
             // Commentaire / Description
             Text(
@@ -182,7 +208,7 @@ fun FeedbackFormScreen(activityId: String,navController: NavHostController) {
                 value = prix,
                 onValueChange = { prix = it
                     validatePrix(it)},
-                placeholder = { Text("Entrez le prix") },
+                placeholder = { Text("Entrez le prix en CAD") },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(bottom = dimensionResource(id = R.dimen.padding_medium)),
@@ -226,7 +252,7 @@ fun FeedbackFormScreen(activityId: String,navController: NavHostController) {
             // Bouton pour ajouter une photo
             Button(
                 onClick = { imagePickerLauncher.launch("image/*") },
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6200EE)),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF8BC34A)),
                 shape = RoundedCornerShape(8.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
@@ -254,7 +280,7 @@ fun FeedbackFormScreen(activityId: String,navController: NavHostController) {
                         }
                     },
                     enabled = !isUpdating, // Désactiver le bouton pendant la mise à jour
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6200EE)),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF8BC34A)),
                     shape = RoundedCornerShape(dimensionResource(id = R.dimen.padding_small))
                 ) {
                     Text(text = "Valider")
